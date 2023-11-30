@@ -1,5 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using static EntityFramworkWpfApp.Animal;
 
@@ -40,8 +42,21 @@ namespace EntityFramworkWpfApp
 
 
     }
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private ObservableCollection<Animal> _animals;
+
+        public ObservableCollection<Animal> Animals
+        {
+            get { return _animals; }
+            set
+            {
+                _animals = value;
+                OnPropertyChanged(nameof(Animals));
+            }
+        }
         public MainWindow()
         {
             InitializeComponent();
@@ -63,6 +78,23 @@ namespace EntityFramworkWpfApp
             }
             catch (SqlException ex) { MessageBox.Show(ex.Message); }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
+            //--
+
+            try
+            {
+                using (AnimalContext db = new AnimalContext())
+                {
+                    Animals = new ObservableCollection<Animal>(db.Animal.ToList());
+                    DG_Table.ItemsSource = Animals;
+                }
+            }
+            catch (SqlException ex) { MessageBox.Show(ex.Message); }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

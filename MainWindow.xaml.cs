@@ -34,7 +34,6 @@ namespace EntityFramworkWpfApp
             public string connectionString = @"Data Source=HomeDE\SQLEXPRESS;Initial Catalog=AnimalDB;Integrated Security=True;Encrypt=False";
             public DbSet<Animal> Animal { set; get; }
             public AnimalContext() {
-                //Database.EnsureDeleted();
                 Database.EnsureCreated();
             }
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { optionsBuilder.UseSqlServer(connectionString); }
@@ -42,21 +41,9 @@ namespace EntityFramworkWpfApp
 
 
     }
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
-        public event PropertyChangedEventHandler PropertyChanged;
 
-        private ObservableCollection<Animal> _animals;
-
-        public ObservableCollection<Animal> Animals
-        {
-            get { return _animals; }
-            set
-            {
-                _animals = value;
-                OnPropertyChanged(nameof(Animals));
-            }
-        }
         public MainWindow()
         {
             InitializeComponent();
@@ -69,32 +56,12 @@ namespace EntityFramworkWpfApp
                     db.Animal.Add(animal1);
                     db.Animal.Add(animal2);
                     db.SaveChanges();
-                    var animals = db.Animal.ToList();
-                    foreach (var animal in animals)
-                    {
-                        animal.Print();
-                    }
+                    //var animals = db.Animal.ToList();
+                    DG_Table.ItemsSource = db.Animal.ToList();
                 }
             }
             catch (SqlException ex) { MessageBox.Show(ex.Message); }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
-            //--
-
-            try
-            {
-                using (AnimalContext db = new AnimalContext())
-                {
-                    Animals = new ObservableCollection<Animal>(db.Animal.ToList());
-                    DG_Table.ItemsSource = Animals;
-                }
-            }
-            catch (SqlException ex) { MessageBox.Show(ex.Message); }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
-        }
-
-        private void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
